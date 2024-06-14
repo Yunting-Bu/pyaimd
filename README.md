@@ -29,10 +29,11 @@ $$f^\prime(x_0)=\dfrac{f(x_0+\Delta)-f(x_0-\Delta)}{2\Delta}$$
 其中 $\Delta$ 为差分步长，理论上其值越小得到的结果约准确。但在实际计算中，$f(x_0)$ 一般不能完全精准的算出，会产生一定的数值误差，如果差分步长取得太小，可能会使结果产生浮动，影响精度。
 
 解析梯度通过对能量求导得来，如 Hartree-Fock 方法的解析梯度为：
-$$\dfrac{\partial E}{\partial X_A}=\sum\limits_{\mu\nu}P_{\nu\mu}\dfrac{\partial H^{core}_{\mu\nu}}{\partial X_A}+\dfrac{1}{2}\sum\limits_{\mu\nu\lambda\sigma}P_{\nu\mu}P_{\lambda\sigma}\dfrac{\partial(\mu\nu||\sigma\lambda)}{\partial X_A}\nonumber\\
--\sum\limits_{\mu\nu}Q_{\nu\mu}\dfrac{\partial S_{\mu\nu}}{\partial X_A}+\dfrac{\partial V_{NN}}{\partial X_A}$$
+$$\dfrac{\partial E}{\partial X_A}=\sum\limits_{\mu\nu}P_{\nu\mu}\dfrac{\partial H^{core}_{\mu\nu}}{\partial X_A}+\dfrac{1}{2}\sum\limits_{\mu\nu\lambda\sigma}P_{\nu\mu}P_{\lambda\sigma}\dfrac{\partial(\mu\nu||\sigma\lambda)}{\partial X_A}$$
+
+$$-\sum\limits_{\mu\nu}Q_{\nu\mu}\dfrac{\partial S_{\mu\nu}}{\partial X_A}+\dfrac{\partial V_{NN}}{\partial X_A}$$
 其中
-$$Q_{\nu\mu}=2\sum\limits^{N/2}_a\varepsilon_aC_{\mu a}C_{\nu a}$$
+$$Q_{\nu\mu}=2\sum\limits^{N/2}_\varepsilon_a C_{\mu a}C_{\nu a}$$
 解析梯度的优点是计算速度较数值梯度更快，但并不是每一种方法都有解析梯度。
 
 在 `PySCF` 中可以很方便的计算梯度：
@@ -51,9 +52,9 @@ $$f(v)=v^2\mathrm{exp}\left( -\dfrac{mv^2}{2k_BT}\right) $$
 为了初始化速度，还需要一个符合正态分布的随机数，其
 平均值为 0 方差为 1，记为 $\mathcal{N}(0,1)$。对于每一个原子，笛卡尔坐标下速度的分量为
 $$v_{i,\alpha}=\sqrt{\dfrac{k_BT}{m_i}}\mathcal{N}(0,1),\quad\alpha\in\{x,y,z\},\quad i=1,2,\dots,N$$
-$\mathcal{N}(0,1)$ 产生通常使用 Box-Muller 变换。设$u_1, u_2$ 是 $[0,1]$ 内任意随机数，通过以下公式得到符合 $\mathcal{N}(0,1)$ 条件的随机数：
-$$z_1=\sqrt{-2\mathrm{log}(u_1)}\mathrm{cos}(2\pi u_2)\nonumber\\
-	z_2=\sqrt{-2\mathrm{log}(u_1)}\mathrm{sin}(2\pi u_2)$$
+$\mathcal{N}(0,1)$ 产生通常使用 Box-Muller 变换。设$u_1 u_2$ 是 $[0,1]$ 内任意随机数，通过以下公式得到符合 $\mathcal{N}(0,1)$ 条件的随机数：
+$$z_1=\sqrt{-2\mathrm{log}(u_1)}\mathrm{cos}(2\pi u_2)\\
+z_2=\sqrt{-2\mathrm{log}(u_1)}\mathrm{sin}(2\pi u_2)$$
 也可以使用 `numpy` 的 `np.random.normal()` 函数轻松的实现。最后，我们需要消除质心的移动，令总的动量为零来产生新的速度
 $$\mathbf{P}_{tot}=\sum\limits^{N}_{i=1}m_i\mathbf{v}_{i,old}\\
 	\mathbf{v}_{i,new}=\mathbf{v}_{i,old}-\dfrac{\mathbf{P}_{tot}}{m_iN}$$
