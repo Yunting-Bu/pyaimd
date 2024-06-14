@@ -28,7 +28,7 @@ Epot = mf.kernel()
 
 数值梯度可以使用有限差分法得到，如求函数 $f(x)$ 在 $x=x_0$ 处的导数：
 $$f^\prime(x_0)=\dfrac{f(x_0+\Delta)-f(x_0-\Delta)}{2\Delta}$$
-其中 $\Delta$ 为差分步长，理论上其值越小得到的结果约准确。但在实际计算中，$f(x_0)$ 一般不能完全精准的算出，会产生一定的数值误差，如果差分步长取得太小，可能会使结果产生浮动，影响精度。
+其中 $\Delta$ 为差分步长，理论上其值越小得到的结果约准确。但在实际计算中，$`f(x_0)`$ 一般不能完全精准的算出，会产生一定的数值误差，如果差分步长取得太小，可能会使结果产生浮动，影响精度。
 
 解析梯度通过对能量求导得来，如 Hartree-Fock 方法的解析梯度为：
 ```math
@@ -36,7 +36,9 @@ $$f^\prime(x_0)=\dfrac{f(x_0+\Delta)-f(x_0-\Delta)}{2\Delta}$$
 ```
 $$-\sum\limits_{\mu\nu}Q_{\nu\mu}\dfrac{\partial S_{\mu\nu}}{\partial X_A}+\dfrac{\partial V_{NN}}{\partial X_A}$$
 其中
-$$Q_{\nu\mu}=2\sum\limits^{N/2}_\varepsilon_a C_{\mu a}C_{\nu a}$$
+```math
+Q_{\nu\mu}=2\sum\limits^{N/2}_\varepsilon_{a} C_{\mu a}C_{\nu a}
+```
 解析梯度的优点是计算速度较数值梯度更快，但并不是每一种方法都有解析梯度。
 
 在 `PySCF` 中可以很方便的计算梯度：
@@ -63,8 +65,12 @@ z_1=\sqrt{-2\mathrm{log}(u_1)}\mathrm{cos}(2\pi u_2)
 z_2=\sqrt{-2\mathrm{log}(u_1)}\mathrm{sin}(2\pi u_2)
 ```
 也可以使用 `numpy` 的 `np.random.normal()` 函数轻松的实现。最后，我们需要消除质心的移动，令总的动量为零来产生新的速度
-$$\mathbf{P}_{tot}=\sum\limits^{N}_{i=1}m_i\mathbf{v}_{i,old}\\
-	\mathbf{v}_{i,new}=\mathbf{v}_{i,old}-\dfrac{\mathbf{P}_{tot}}{m_iN}$$
+```math
+P_{tot}=\sum\limits^{N}_{i=1}m_i v_{i,old}
+```
+```math
+	v_{i,new}=v_{i,old}-\dfrac{P_{tot}}{m_iN}
+```
 #### 运动积分
 分子动力学采用牛顿运动方程来求算分子骨架随时间的演变，牛顿运动方程为一种常微分方程，MD 中常使用 Verlet 法以及其变种进行数值求解。速度 Verlet 方法是一种较为常用且简单的方法，其运动方程为：
 $$\mathbf{v}(t+\Delta t)=\mathbf{v}(t)+\dfrac{\Delta t(\mathbf{a}(t)+\mathbf{a}(t+\Delta t))}{2}\\
