@@ -37,7 +37,7 @@ $$f^\prime(x_0)=\dfrac{f(x_0+\Delta)-f(x_0-\Delta)}{2\Delta}$$
 $$-\sum\limits_{\mu\nu}Q_{\nu\mu}\dfrac{\partial S_{\mu\nu}}{\partial X_A}+\dfrac{\partial V_{NN}}{\partial X_A}$$
 其中
 ```math
-Q_{\nu\mu}=2\sum\limits^{N/2}_\varepsilon_{a} C_{\mu a}C_{\nu a}
+Q_{\nu\mu}=2\sum\limits^{N/2}_a\varepsilon_{a} C_{\mu a}C_{\nu a}
 ```
 解析梯度的优点是计算速度较数值梯度更快，但并不是每一种方法都有解析梯度。
 
