@@ -91,7 +91,6 @@ P_{tot}=\sum\limits^{N}_{i=1}m_i v_{i,old}
 ```math
 	v_{i,new}=v_{i,old}-\dfrac{P_{tot}}{m_iN}
 ```
-<<<<<<< HEAD
 可编程代码如下：
 ```python
 # Initialize velocity
@@ -111,8 +110,6 @@ for i in range(natm):
     vel_old[i,:] = np.sqrt((init_temp*const.kB*const.J2au) \
                          /(atom_mass[i]*const.dalton2au))*vel_old[i,:]
 ```
-=======
->>>>>>> 1c908a942feb9408f7c45dc38aab7b668aa3ac33
 #### 运动积分
 分子动力学采用牛顿运动方程来求算分子骨架随时间的演变，牛顿运动方程为一种常微分方程，MD 中常使用 Verlet 法以及其变种进行数值求解。速度 Verlet 方法是一种较为常用且简单的方法，其运动方程为：
 $$\mathbf{v}(t+\Delta t)=\mathbf{v}(t)+\dfrac{\Delta t(\mathbf{a}(t)+\mathbf{a}(t+\Delta t))}{2}\\
@@ -126,11 +123,8 @@ $$\mathbf{a}(t)=\dfrac{\mathbf{F}(t)}{m_i}$$
 Berendsen 热浴具体运作原理如下：
 
 首先计算矫正因子
-<<<<<<< HEAD
 $$f=\sqrt{1+\dfrac{\Delta t (T_{bath}-T_{c})}{T_{c}\tau}}$$
-=======
 $$f=\sqrt{1+\dfrac{T_{bath}-T_{c}}{T_{c}\tau}}$$
->>>>>>> 1c908a942feb9408f7c45dc38aab7b668aa3ac33
 其中，$`T_{bath}`$ 为设定的热浴温度，$`\tau`$ 为时间常数，通常为 $`20-200 fs`$，$`T_c`$ 为使用如下公式计算的温度（非线型分子）：
 ```math
 E_k=\dfrac{1}{2}\sum\limits_i^Nm_i\mathbf{v}_i^2
@@ -139,7 +133,6 @@ E_k=\dfrac{1}{2}\sum\limits_i^Nm_i\mathbf{v}_i^2
 $$T_c=\dfrac{2E_k}{3k_BN}$$
 $`E_k`$ 为体系动能，于是，矫正后的速度为
 $$v_{i,new}=f\cdot v_{i,old}$$
-<<<<<<< HEAD
 将函数封存在`md_func.py`中，动能的计算：
 ```python
 def cal_kin(natm,vel,atom_mass):
@@ -174,6 +167,4 @@ temp_cal = aimd.cal_temp(natm,Ekin)
 f = aimd.berendsen(dt,bath_temp,con_time,temp_cal)
 vel_new = vel_new * f
 ```
-=======
 要格外注意需要对单位进行替换，如将 fs 与 dalton 都转换成原子单位制。
->>>>>>> 1c908a942feb9408f7c45dc38aab7b668aa3ac33
