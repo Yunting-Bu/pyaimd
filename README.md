@@ -50,6 +50,26 @@ grad = g.kernel()
 ```
 
 ### 分子动力学
+首先，要格外注意需要对单位进行替换，如将 fs 与 dalton 都转换成原子单位制。将常数放在`constants.py`中：
+```python
+kB = 1.380649e-23
+dalton2au = 1822.888486209
+J2au = 2.2937122783963248e+17
+fs2au = 4.1341373335182112e+01
+ang2bo = 0.529177249
+```
+通过 `import` 引入，如
+```python
+import constants as const
+
+# Time step(fs) and number of steps
+dt = 0.5 * const.fs2au
+nstep = 1000
+
+# Temperature of the thermostat (K), time constant (fs)
+bath_temp = 298.15
+con_time = 30.0 * const.fs2au
+```
 #### 速度初始化
 在进行 MD 手续之前， 需要对速度进行初始化， 常用的初始化方法为
 Maxwell-Boltzmann 分布。在给定温度 `init_temp` 下，未归一化的 MB 分布公式为：
@@ -71,19 +91,39 @@ P_{tot}=\sum\limits^{N}_{i=1}m_i v_{i,old}
 ```math
 	v_{i,new}=v_{i,old}-\dfrac{P_{tot}}{m_iN}
 ```
+可编程代码如下：
+```python
+# Initialize velocity
+# Generate random numbers with mean 0, variance 1, following a normal distribution
+init_temp = 298.15
+vel_old = np.random.normal(0, 1.0, size=np.prod((natm,3))).reshape(natm,3)
+
+# Subracting the average velocity so the center of mass does not move
+vel_avg = np.zeros(3, dtype=float)
+for i in range(3):
+    vel_avg[i] = np.sum(vel_old[:,i])/natm
+for i in range(natm):
+    vel_old[i,:] = vel_old[i,:] - vel_avg[i]
+
+# Maxwell-Boltzmann
+for i in range(natm):
+    vel_old[i,:] = np.sqrt((init_temp*const.kB*const.J2au) \
+                         /(atom_mass[i]*const.dalton2au))*vel_old[i,:]
+```
 #### 运动积分
 分子动力学采用牛顿运动方程来求算分子骨架随时间的演变，牛顿运动方程为一种常微分方程，MD 中常使用 Verlet 法以及其变种进行数值求解。速度 Verlet 方法是一种较为常用且简单的方法，其运动方程为：
 $$\mathbf{v}(t+\Delta t)=\mathbf{v}(t)+\dfrac{\Delta t(\mathbf{a}(t)+\mathbf{a}(t+\Delta t))}{2}\\
 	\mathbf{r}(t+\Delta t)=\mathbf{r}(t)+\Delta t\mathbf{v}(t)+\dfrac{\Delta t^2\mathbf{a}(t)}{2}$$
 其中加速度为
 $$\mathbf{a}(t)=\dfrac{\mathbf{F}(t)}{m_i}$$
+同样，我们也需要最后消除平动速度。
 #### Berendsen 热浴
 在特定温度下初始化速度后，可以假定系统以 NVE 系综进行运动积分，并且起始温度大致保持不变。然而，在真实系统中，有至少两个原因会导致温度在运动几步之后就会明显偏离初始值。首先，初始速度分布仅考虑了粒子的动能，但是一些动能会在运动开始时立即与势能贡献（例如键伸缩）交换，从而改变温度。其次，由于有限时间步长引入的数值误差会导致能量和温度漂移。为了抵消这些影响，通常希望在模拟过程中进行温度控制，使系统以 NVT 系综运行，这被称为热浴。
 
 Berendsen 热浴具体运作原理如下：
 
 首先计算矫正因子
-$$f=\sqrt{1+\dfrac{T_{bath}-T_{c}}{T_{c}\tau}}$$
+$$f=\sqrt{1+\dfrac{\Delta t (T_{bath}-T_{c})}{T_{c}\tau}}$$
 其中，$`T_{bath}`$ 为设定的热浴温度，$`\tau`$ 为时间常数，通常为 $`20-200 fs`$，$`T_c`$ 为使用如下公式计算的温度（非线型分子）：
 ```math
 E_k=\dfrac{1}{2}\sum\limits_i^Nm_i\mathbf{v}_i^2
@@ -92,4 +132,37 @@ E_k=\dfrac{1}{2}\sum\limits_i^Nm_i\mathbf{v}_i^2
 $$T_c=\dfrac{2E_k}{3k_BN}$$
 $`E_k`$ 为体系动能，于是，矫正后的速度为
 $$v_{i,new}=f\cdot v_{i,old}$$
-要格外注意需要对单位进行替换，如将 fs 与 dalton 都转换成原子单位制。
+将函数封存在`md_func.py`中，动能的计算：
+```python
+def cal_kin(natm,vel,atom_mass):
+    Ekin = 0.0
+    for i in range(natm):
+        Ekin = Ekin + 0.5*atom_mass[i]*const.dalton2au*np.linalg.norm(vel[i,:])**2.0
+    return Ekin
+```
+温度的计算：
+```python
+def cal_temp(natm,Ekin):
+    temp_cal = (2.0*Ekin)/(3.0*const.kB*const.J2au*natm)
+    return temp_cal
+```
+以及热浴矫正因子的计算：
+```python
+def berendsen(dt,bath_temp,con_time,temp_cal):
+    f = np.sqrt(1.0+(dt*(bath_temp/temp_cal-1.0)/con_time))
+    # From PySCF
+    if f > 1.1:
+        f = 1.1
+    if f < 0.9:
+        f = 0.9
+    return f 
+```
+对速度的矫正便为
+```python
+import md_func as aimd
+
+Ekin = aimd.cal_kin(natm,vel_old,atom_mass)
+temp_cal = aimd.cal_temp(natm,Ekin)
+f = aimd.berendsen(dt,bath_temp,con_time,temp_cal)
+vel_new = vel_new * f
+```

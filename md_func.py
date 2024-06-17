@@ -13,7 +13,7 @@ def cal_temp(natm,Ekin):
 
 def berendsen(dt,bath_temp,con_time,temp_cal):
     f = np.sqrt(1.0+(dt*(bath_temp/temp_cal-1.0)/con_time))
-    # Form PySCF
+    # From PySCF
     if f > 1.1:
         f = 1.1
     if f < 0.9:
