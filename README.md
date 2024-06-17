@@ -167,4 +167,4 @@ temp_cal = aimd.cal_temp(natm,Ekin)
 f = aimd.berendsen(dt,bath_temp,con_time,temp_cal)
 vel_new = vel_new * f
 ```
-要格外注意需要对单位进行替换，如将 fs 与 dalton 都转换成原子单位制。
+
