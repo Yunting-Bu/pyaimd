@@ -124,7 +124,6 @@ Berendsen 热浴具体运作原理如下：
 
 首先计算矫正因子
 $$f=\sqrt{1+\dfrac{\Delta t (T_{bath}-T_{c})}{T_{c}\tau}}$$
-$$f=\sqrt{1+\dfrac{T_{bath}-T_{c}}{T_{c}\tau}}$$
 其中，$`T_{bath}`$ 为设定的热浴温度，$`\tau`$ 为时间常数，通常为 $`20-200 fs`$，$`T_c`$ 为使用如下公式计算的温度（非线型分子）：
 ```math
 E_k=\dfrac{1}{2}\sum\limits_i^Nm_i\mathbf{v}_i^2
